@@ -1,0 +1,33 @@
+version: "3.2"
+services:
+  srv:
+    image: fakebuntu
+    build: .
+    restart: always
+    volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - ${HOME}/.ssh/id_rsa.pub:/id_rsa.pub
+    environment:
+      XDG_RUNTIME_DIR: /run
+      http_proxy: ${http_proxy}
+      https_proxy: ${https_proxy}
+    tmpfs:
+    - /tmp
+    - /run
+    - /run/lock
+    stop_signal: PWR
+    stop_grace_period: 1m
+    privileged: true
+    cap_add:
+    - SYS_ADMIN
+    security_opt:
+    - seccomp:unconfined
+    stdin_open: true
+    tty: true
+    ports:
+    - 22
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 40000
+        hard: 40000
