@@ -3,10 +3,11 @@ services:
   srv:
     image: fakebuntu
     build: .
-    restart: always
+    restart: unless-stopped
     volumes:
     - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    - ${HOME}/.ssh/id_rsa.pub:/id_rsa.pub
+    - ${HOME}/.ssh/id_rsa.pub:/host-id_rsa.pub:ro
+    - /var/run/docker.sock:/host-docker.sock
     environment:
       XDG_RUNTIME_DIR: /run
       http_proxy: ${http_proxy}
@@ -19,10 +20,10 @@ services:
     stop_grace_period: 1m
     privileged: true
     cap_add:
-    - SYS_ADMIN
+    - ALL
     security_opt:
     - seccomp:unconfined
-    stdin_open: true
+    stdin_open: false
     tty: true
     ports:
     - 22
