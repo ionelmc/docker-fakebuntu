@@ -1,3 +1,8 @@
+FROM buildpack-deps:xenial AS libs
+
+ADD console.c /
+RUN gcc -fPIC -shared -o /console.so /console.c -ldl
+
 FROM ubuntu:xenial-20170410
 
 RUN apt-get update \
@@ -6,7 +11,7 @@ RUN apt-get update \
         ca-certificates \
         curl \
         software-properties-common \
-        openssh-server systemd \
+        openssh-server systemd dbus \
         locales tzdata wget \
         strace gdb lsof locate net-tools htop iputils-ping dnsutils \
         python2.7-dbg python2.7 libpython2.7 python-dbg libpython-dbg \
@@ -30,6 +35,7 @@ RUN find /etc/systemd/system \
          /lib/systemd/system \
          -path '*.wants/*' \
          -not -name '*journald*' \
+         -not -name '*dbus*' \
          -not -name '*docker*' \
          -not -name '*ssh*' \
          -not -name '*pwr*' \
@@ -41,7 +47,8 @@ RUN echo 'ForwardToConsole=yes' >> /etc/systemd/journald.conf
 RUN echo 'MaxLevelConsole=info' >> /etc/systemd/journald.conf
 RUN echo 'SplitMode=none' >> /etc/systemd/journald.conf
 RUN echo 'Storage=volatile' >> /etc/systemd/journald.conf
-RUN echo 'TTYPath=/dev/console' >> /etc/systemd/journald.conf
+COPY --from=libs console.so /
+ENV LD_PRELOAD=/console.so
 VOLUME ["/storage"]
 STOPSIGNAL "PWR"
 ADD entrypoint.sh /

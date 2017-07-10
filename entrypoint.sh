@@ -1,5 +1,6 @@
 #!/bin/sh -eux
-exec 3>&1
+systemd --version
+
 mkdir -p /root/.ssh
 cp /id_rsa.pub /root/.ssh/authorized_keys
 chown root -R /root/.ssh
